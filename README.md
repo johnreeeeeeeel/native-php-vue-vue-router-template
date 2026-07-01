@@ -1,6 +1,6 @@
 # Native PHP + Vue 3 + Vite + Vue Router Setup
 
-A simple setup guide for creating a project using:
+A simple setup guide for creating a full-stack project using:
 
 - Backend: Native PHP + MySQL
 - Frontend: Vue 3 + Vite
@@ -8,6 +8,8 @@ A simple setup guide for creating a project using:
 - HTTP Client: Axios
 - Email: PHPMailer
 - Environment: PHP dotenv
+
+---
 
 # Project Structure
 
@@ -26,33 +28,39 @@ myproject/
 │   ├── .env
 │   └── index.php
 │
-└── frontend/
-    ├── src/
-    │   ├── layouts/
-    │   │   └── Layout.vue
-    │   │
-    │   ├── pages/
-    │   │   └── Welcome.vue
-    │   │
-    │   ├── router/
-    │   │   └── index.js
-    │   │
-    │   ├── App.vue
-    │   ├── main.js
-    │   └── style.css
-    │
-    └── index.html
+├── frontend/
+│   ├── src/
+│   │   ├── layouts/
+│   │   │   └── Layout.vue
+│   │   │
+│   │   ├── pages/
+│   │   │   └── Welcome.vue
+│   │   │
+│   │   ├── router/
+│   │   │   └── index.js
+│   │   │
+│   │   ├── App.vue
+│   │   ├── main.js
+│   │   └── style.css
+│   │
+│   └── index.html
+│
+└── README.md
 ```
+
+---
 
 # 1. Create Backend Directory
 
-Create the backend folder:
+Create the backend folders:
 
 ```
 backend/
 ├── config
 └── api
 ```
+
+---
 
 # 2. Create Database
 
@@ -74,12 +82,14 @@ CREATE TABLE users (
     email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) DEFAULT 'user',
-    reset_token VARCHAR(255) NULL,
-    reset_expire DATETIME NULL,
+    reset_token VARCHAR(255),
+    reset_expire DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+---
 
 # 3. Create Backend Entry File
 
@@ -103,9 +113,11 @@ echo json_encode([
 ?>
 ```
 
+---
+
 # 4. Install PHPMailer
 
-Go to backend:
+Go inside backend:
 
 ```bash
 cd backend
@@ -117,6 +129,8 @@ Install PHPMailer:
 composer require phpmailer/phpmailer
 ```
 
+---
+
 # 5. Install PHP dotenv
 
 Install dotenv:
@@ -124,7 +138,6 @@ Install dotenv:
 ```bash
 composer require vlucas/phpdotenv
 ```
-
 
 Create:
 
@@ -151,6 +164,8 @@ SMTP_TO=test@gmail.com
 SMTP_TITLE="My Project"
 ```
 
+---
+
 # 6. Create Database Connection
 
 Create:
@@ -167,7 +182,9 @@ Code:
 require __DIR__ . "/../vendor/autoload.php";
 
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/..");
+$dotenv = Dotenv\Dotenv::createImmutable(
+    __DIR__ . "/.."
+);
 
 $dotenv->load();
 
@@ -180,17 +197,19 @@ $conn = new mysqli(
 );
 
 
-if($conn->connect_error){
+if ($conn->connect_error) {
 
     die(
         "Database Connection Failed: "
-        .$conn->connect_error
+        . $conn->connect_error
     );
 
 }
 
 ?>
 ```
+
+---
 
 # 7. Create API Example
 
@@ -221,7 +240,7 @@ $result = $conn->query(
 $data = [];
 
 
-while($row = $result->fetch_assoc()){
+while ($row = $result->fetch_assoc()) {
 
     $data[] = $row;
 
@@ -232,6 +251,8 @@ echo json_encode($data);
 
 ?>
 ```
+
+---
 
 # 8. Create Vue Frontend
 
@@ -247,7 +268,6 @@ Create Vue project:
 npm create vite@latest frontend
 ```
 
-
 Select:
 
 ```
@@ -258,6 +278,8 @@ Variant:
 JavaScript
 ```
 
+---
+
 # 9. Install Frontend Dependencies
 
 Go inside frontend:
@@ -265,7 +287,6 @@ Go inside frontend:
 ```bash
 cd frontend
 ```
-
 
 Install packages:
 
@@ -278,6 +299,8 @@ npm install axios
 
 npm install bootstrap
 ```
+
+---
 
 # 10. Configure Vue Router
 
@@ -292,10 +315,10 @@ Code:
 ```javascript
 import { createRouter, createWebHistory } from 'vue-router'
 
-
 import GuestLayout from '../layouts/Layout.vue'
 
 import GuestWelcome from '../pages/Welcome.vue'
+
 
 const routes = [
 
@@ -331,6 +354,8 @@ const router = createRouter({
 
 export default router
 ```
+
+---
 
 # 11. Configure Frontend HTML
 
@@ -371,6 +396,8 @@ Code:
 </html>
 ```
 
+---
+
 # 12. Create Layout Component
 
 Create:
@@ -388,11 +415,12 @@ Code:
         Layout
     </h1>
 
-
     <router-view />
 
 </template>
 ```
+
+---
 
 # 13. Create Page Component
 
@@ -414,6 +442,8 @@ Code:
 </template>
 ```
 
+---
+
 # 14. Connect Router
 
 Edit:
@@ -431,8 +461,7 @@ import './style.css'
 
 import App from './App.vue'
 
-
-import router from "./router"
+import router from './router'
 
 
 createApp(App)
@@ -442,11 +471,13 @@ createApp(App)
 .mount('#app')
 ```
 
+---
+
 # 15. Run Project
 
 ## Start Backend
 
-Terminal 1:
+Open Terminal 1:
 
 ```bash
 cd myproject
@@ -462,10 +493,11 @@ Backend:
 http://localhost:8000
 ```
 
+---
 
 ## Start Frontend
 
-Terminal 2:
+Open Terminal 2:
 
 ```bash
 cd myproject
@@ -479,4 +511,197 @@ Frontend:
 
 ```
 http://localhost:5173
+```
+
+---
+
+# Deployment
+
+## Deployment Structure
+
+```
+deploy/
+
+├── backend/
+│   ├── api/
+│   │   └── users.php
+│   │
+│   ├── config/
+│   │   └── database.php
+│   │
+│   ├── vendor/
+│   ├── .env
+│   └── index.php
+│
+├── dist/
+│   ├── index.html
+│   └── assets/
+│       ├── index-abc123.js
+│       └── index-def456.css
+│
+├── index.php
+└── .htaccess
+```
+
+---
+
+# Step 1: Build Frontend
+
+Go to frontend:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Build:
+
+```bash
+npm run build
+```
+
+---
+
+# Step 2: Create Deployment Package
+
+Go back:
+
+```bash
+cd ..
+```
+
+Create deploy folder:
+
+```bash
+mkdir deploy
+```
+
+Copy backend:
+
+```bash
+cp -r backend deploy/
+```
+
+Copy Vue build:
+
+```bash
+cp -r frontend/dist deploy/
+```
+
+---
+
+# Create Deployment Router
+
+Inside:
+
+```
+deploy/index.php
+```
+
+Add:
+
+```php
+<?php
+
+$path = parse_url(
+    $_SERVER['REQUEST_URI'],
+    PHP_URL_PATH
+);
+
+
+// API requests
+if (strpos($path, '/api/') === 0) {
+
+    $file = __DIR__ . '/backend' . $path;
+
+
+    if (file_exists($file)) {
+
+        require_once $file;
+
+        exit;
+
+    }
+
+
+    $file .= '.php';
+
+
+    if (file_exists($file)) {
+
+        require_once $file;
+
+        exit;
+
+    }
+
+}
+
+
+// Static files
+$file = __DIR__ . '/dist' . $path;
+
+
+if (file_exists($file) && !is_dir($file)) {
+
+    readfile($file);
+
+    exit;
+
+}
+
+
+// Vue Router fallback
+require_once __DIR__ . '/dist/index.html';
+
+?>
+```
+
+---
+
+# Create .htaccess
+
+Create:
+
+```
+deploy/.htaccess
+```
+
+Add:
+
+```apache
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^ index.php [L]
+```
+
+---
+
+# Step 3: Upload To Server
+
+Upload the contents inside:
+
+```
+deploy/
+```
+
+to your hosting public directory.
+
+Your application will run:
+
+```
+Frontend:
+yourdomain.com
+
+API:
+yourdomain.com/api/users.php
 ```
