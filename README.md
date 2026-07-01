@@ -607,58 +607,83 @@ Add:
 
 ```php
 <?php
+// index.php - Main router
 
-$path = parse_url(
-    $_SERVER['REQUEST_URI'],
-    PHP_URL_PATH
-);
+// Get the request path
+$request_uri = $_SERVER['REQUEST_URI'];
+$path = parse_url($request_uri, PHP_URL_PATH);
 
+// --- FIRST: Check for static files (CSS, JS, Images) ---
+// This prevents the MIME type error!
+$static_file = __DIR__ . '/dist' . $path;
 
-// API requests
-if (strpos($path, '/api/') === 0) {
-
-    $file = __DIR__ . '/backend' . $path;
-
-
-    if (file_exists($file)) {
-
-        require_once $file;
-
-        exit;
-
+if (file_exists($static_file) && !is_dir($static_file)) {
+    // Get file extension
+    $ext = pathinfo($static_file, PATHINFO_EXTENSION);
+    
+    // Set correct MIME type
+    $mime_types = [
+        'js' => 'application/javascript',
+        'css' => 'text/css',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'gif' => 'image/gif',
+        'svg' => 'image/svg+xml',
+        'ico' => 'image/x-icon',
+        'woff' => 'font/woff',
+        'woff2' => 'font/woff2',
+        'ttf' => 'font/ttf',
+        'json' => 'application/json'
+    ];
+    
+    if (isset($mime_types[$ext])) {
+        header('Content-Type: ' . $mime_types[$ext]);
     }
-
-
-    $file .= '.php';
-
-
-    if (file_exists($file)) {
-
-        require_once $file;
-
-        exit;
-
-    }
-
-}
-
-
-// Static files
-$file = __DIR__ . '/dist' . $path;
-
-
-if (file_exists($file) && !is_dir($file)) {
-
-    readfile($file);
-
+    
+    // Cache static files
+    header('Cache-Control: public, max-age=31536000');
+    
+    // Serve the file
+    readfile($static_file);
     exit;
-
 }
 
+// --- API Routes ---
+if (strpos($path, '/api/') === 0) {
+    // Remove /api/ prefix
+    $api_path = substr($path, 5);
+    
+    // Try .php file
+    $api_file = __DIR__ . '/backend/api/' . $api_path . '.php';
+    if (file_exists($api_file)) {
+        require_once $api_file;
+        exit;
+    }
+}
 
-// Vue Router fallback
-require_once __DIR__ . '/dist/index.html';
+// --- Backend Routes ---
+if (strpos($path, '/backend/') === 0) {
+    $backend_file = __DIR__ . $path;
+    if (file_exists($backend_file) && !is_dir($backend_file)) {
+        require_once $backend_file;
+        exit;
+    }
+    $backend_file .= '.php';
+    if (file_exists($backend_file)) {
+        require_once $backend_file;
+        exit;
+    }
+}
 
+// --- VUE APPLICATION (Default) ---
+if (file_exists(__DIR__ . '/dist/index.html')) {
+    require_once __DIR__ . '/dist/index.html';
+} else {
+    http_response_code(500);
+    echo "Frontend build not found. Please run 'npm run build' and upload the dist folder.";
+}
+exit;
 ?>
 ```
 
@@ -675,12 +700,22 @@ deploy/.htaccess
 Add:
 
 ```apache
+# Enable rewrite engine
 RewriteEngine On
 
-RewriteCond %{REQUEST_FILENAME} !-f
+# IMPORTANT: Serve existing files directly (CSS, JS, Images)
+# This prevents the MIME type error
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-RewriteCond %{REQUEST_FILENAME} !-d
+# API routes
+RewriteRule ^api/(.*)$ backend/api/$1 [L,NC]
 
+# Backend routes  
+RewriteRule ^backend/(.*)$ backend/$1 [L,NC]
+
+# Everything else to index.php (Vue router)
 RewriteRule ^ index.php [L]
 ```
 
